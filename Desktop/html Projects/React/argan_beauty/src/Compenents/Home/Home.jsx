@@ -25,7 +25,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden ">
       {/* Section vidéo */}
       <div className="absolute top-0 left-0 w-full h-full">
         <div className="absolute top-0 left-0 w-full h-full bg-black/50 z-10" />
@@ -44,10 +44,10 @@ const Home = () => {
       {/* Contenu principal */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full text-white">
         <h1 className="text-6xl font-bold mb-6 text-center">
-          Bienvenue sur notre site
+        ARGAN BEAUTY
         </h1>
         <p className="text-xl mb-12 text-center max-w-2xl">
-          Découvrez nos innovations et nos services exceptionnels
+        Discover the essence of moroccan beauty
         </p>
         
         {/* Bouton flèche animé */}

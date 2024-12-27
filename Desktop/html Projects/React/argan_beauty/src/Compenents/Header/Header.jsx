@@ -2,19 +2,19 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Menu, X, User, Sun, Moon, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Optimized logo import with potential for webp/svg
-import logo from '../../image/logo.jpg'; 
-
+import logo from '../../image/logo.jpg';
 
 function ProHeader() {
+  // États
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [cartItems, setCartItems] = useState(0); // Pour le compteur du panier
+  const [cartCount, setCartCount] = useState(0);  
+  const [id_cart, setIdCart] = useState(null);
+  const [identity, setIdentity] = useState(null);
   const headerRef = useRef(null);
 
-  // Memoized navigation links
+  // Navigation links
   const links = React.useMemo(() => [
     { name: "Home", path: "/", icon: "🏠" },
     { name: "Products", path: "/card", icon: "🛍️" },
@@ -22,32 +22,70 @@ function ProHeader() {
     { name: "Contact", path: "/contact", icon: "📞" }
   ], []);
 
-  // Optimized scroll handler with throttling
+  // Gestion du scroll
   const handleScroll = useCallback(() => {
     const scrollThreshold = 20;
     setIsScrolled(window.scrollY > scrollThreshold);
   }, []);
 
-  // Performance-optimized scroll listener
-  useEffect(() => {
-    const optimizedScrollHandler = () => {
-      requestAnimationFrame(handleScroll);
-    };
+  // Mise à jour du compteur du panier
+  const updateCartCount = useCallback(async () => {
+    if (!id_cart) return;
 
+    try {
+      const response = await fetch(
+        `https://e2c7-196-117-24-244.ngrok-free.app/Argan_beauty/cart.php?id_cart=${id_cart}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': true,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Erreur de chargement du panier');
+
+      const data = await response.json();
+      const totalItems = Array.isArray(data) 
+        ? data.reduce((sum, item) => sum + (parseFloat(item.quantity) || 1), 0)
+        : 0;
+      
+      setCartCount(totalItems);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du compteur:', error);
+      setCartCount(0);
+    }
+  }, [id_cart]);
+
+  // Effet pour charger les données initiales
+  useEffect(() => {
+    const storedCartId = localStorage.getItem('id_cart');
+    const storedIdentity = localStorage.getItem('identity');
+    setIdCart(storedCartId);
+    setIdentity(storedIdentity);
+  }, []);
+
+  // Effet pour le scroll
+  useEffect(() => {
+    const optimizedScrollHandler = () => requestAnimationFrame(handleScroll);
     window.addEventListener('scroll', optimizedScrollHandler, { passive: true });
     return () => window.removeEventListener('scroll', optimizedScrollHandler);
   }, [handleScroll]);
 
-  // Theme toggle handler
+  // Effet pour le compteur du panier
+  useEffect(() => {
+    updateCartCount();
+    window.addEventListener('cartUpdated', updateCartCount);
+    return () => window.removeEventListener('cartUpdated', updateCartCount);
+  }, [updateCartCount]);
+
+  // Handlers
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
   };
 
-  // Mobile menu toggle with animation
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <motion.header
@@ -62,14 +100,14 @@ function ProHeader() {
       }}
       transition={{ duration: 0.3 }}
       className={`
-        fixed w-full top-0 z-50 p-4 mb-5
+        fixed w-full top-0 z-50 p-4 
         backdrop-blur-md transition-all duration-300
         ${isDarkMode ? 'dark:bg-gray-900/80' : 'bg-white/80'}
         ${isScrolled ? 'shadow-md' : ''}
       `}
     >
       <div className="container mx-auto flex items-center justify-between">
-        {/* Logo Section avec Advanced Interactions */}
+        {/* Logo */}
         <motion.div 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -117,7 +155,7 @@ function ProHeader() {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Desktop Navigation */}
+        {/* Navigation */}
         <nav className={`
           ${isMenuOpen ? 'flex' : 'hidden'} 
           md:flex flex-col md:flex-row 
@@ -141,12 +179,9 @@ function ProHeader() {
                     ${isDarkMode 
                       ? 'text-green-300 hover:text-green-200' 
                       : 'text-gray-800 hover:text-green-600'}
-                    font-medium 
-                    transition-colors 
-                    py-2 md:py-0
+                    font-medium transition-colors py-2 md:py-0
                   `}
                   onClick={() => setIsMenuOpen(false)}
-                  aria-label={`Go to ${link.name} page`}
                 >
                   <span>{link.icon}</span>
                   {link.name}
@@ -156,12 +191,10 @@ function ProHeader() {
           </AnimatePresence>
         </nav>
 
-        {/* Search, Cart and Login Section */}
+        {/* Actions */}
         <div className="hidden md:flex items-center space-x-4">
-          <motion.div 
-            whileFocus={{ scale: 1.05 }}
-            className="relative"
-          >
+          {/* Search */}
+          <motion.div whileFocus={{ scale: 1.05 }} className="relative">
             <input
               type="text"
               placeholder="Search products"
@@ -183,62 +216,57 @@ function ProHeader() {
             />
           </motion.div>
           
-          {/* Bouton Panier */}
-          <motion.div 
-            whileHover={{ scale: 1.1 }} 
-            whileTap={{ scale: 0.9 }}
-            className="relative"
-          >
-            <Link
-              to="/cart"
-              className={`
-                flex items-center gap-2
-                px-4 py-2 rounded-full
-                transition-all duration-300
-                ${isDarkMode 
-                  ? 'bg-gray-700 text-green-300 hover:bg-gray-600' 
-                  : 'bg-gray-100 text-green-600 hover:bg-gray-200'}
-              `}
-              aria-label="Shopping cart"
+          {/* Cart/Login */}
+          {identity === "user" ? (
+            <motion.div 
+              whileHover={{ scale: 1.1 }} 
+              whileTap={{ scale: 0.9 }}
+              className="relative"
             >
-              <ShoppingCart size={18} />
-              {cartItems > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className={`
-                    absolute -top-2 -right-2
-                    bg-red-500 text-white
-                    rounded-full w-5 h-5
-                    flex items-center justify-center
-                    text-xs font-bold
-                  `}
-                >
-                  {cartItems}
-                </motion.span>
-              )}
-            </Link>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <Link
-              to="/login"
-              className={`
-                flex items-center gap-2
-                px-4 py-2 rounded-full 
-                transition-all duration-300
-                ${isDarkMode 
-                  ? 'bg-green-800 text-green-200 hover:bg-green-700' 
-                  : 'bg-green-600 text-white hover:bg-green-700'}
-              `}
-            >
-              <User size={18} />
-              Login
-            </Link>
-          </motion.div>
+              <Link
+                to={`/cart/${id_cart}`}
+                className={`
+                  flex items-center gap-2
+                  px-4 py-2 rounded-full
+                  transition-all duration-300
+                  ${isDarkMode 
+                    ? 'bg-gray-700 text-green-300 hover:bg-gray-600' 
+                    : 'bg-gray-100 text-green-600 hover:bg-gray-200'}
+                `}
+                aria-label="Shopping cart"
+              >
+                <ShoppingCart size={18} />
+                {cartCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
+                  >
+                    {cartCount}
+                  </motion.span>
+                )}
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link
+                to="/login"
+                className={`
+                  flex items-center gap-2
+                  px-4 py-2 rounded-full 
+                  transition-all duration-300
+                  ${isDarkMode 
+                    ? 'bg-green-800 text-green-200 hover:bg-green-700' 
+                    : 'bg-green-600 text-white hover:bg-green-700'}
+                `}
+              >
+                <User size={18} />
+                Login
+              </Link>
+            </motion.div>
+          )}
         </div>
       </div>
-     
     </motion.header>
   );
 }

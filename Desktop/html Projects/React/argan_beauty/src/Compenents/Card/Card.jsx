@@ -6,7 +6,7 @@ const ProductDisplay = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null);  
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -35,7 +35,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const loadProducts = async () => {
       await fetchData(
-        'https://2f98-196-117-24-244.ngrok-free.app/Argan_beauty/api.php',
+        'https://e2c7-196-117-24-244.ngrok-free.app/Argan_beauty/api.php',
         (data) => {
           const uniqueProducts = data
             .filter(
@@ -55,7 +55,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetch('https://2f98-196-117-24-244.ngrok-free.app/Argan_beauty/categorie.php', {
+        const response = await fetch('https://e2c7-196-117-24-244.ngrok-free.app/Argan_beauty/categorie.php', {
           method: 'GET',
           headers: {
             'ngrok-skip-browser-warning': '1',
@@ -124,9 +124,9 @@ const ProductDisplay = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <div className="container mx-auto px-4 py-8 mt-9">
       <div className="text-center mt-19">
-      <h1 className="text-4xl font-extrabold text-green-800 mt-20">Nos Produits</h1>
+      <h1 className="text-4xl font-extrabold text-green-800 mt-8">Nos Produits</h1>
       <p className="text-gray-600 max-w-2xl mx-auto">
           Découvrez notre gamme de produits soigneusement sélectionnés pour votre bien-être.
         </p>
@@ -190,7 +190,7 @@ const ProductDisplay = () => {
                         : 'bg-red-100 text-red-800'
                     }`}
                   >
-                    {product.stock > 0 ? `Stock: ${product.stock} `: 'Rupture'}
+                    {product.stock > 0 ? `Stock: ${product.stock}` : 'Rupture'}
                   </span>
                 </div>
 
@@ -234,4 +234,4 @@ const ProductDisplay = () => {
   );
 };
 
-export default ProductDisplay;
+export default ProductDisplay;

@@ -35,7 +35,7 @@ const Auth = () => {
 
     try {
       const response = await fetch(
-        "https://2f98-196-117-24-244.ngrok-free.app/Argan_beauty/auth.php",
+        "https://e2c7-196-117-24-244.ngrok-free.app/Argan_beauty/auth.php",
         {
           method: "POST",
           headers: {
@@ -54,8 +54,10 @@ const Auth = () => {
 
       setMessage(data.message || "Success!");
       if (!isRegister) {
-        localStorage.setItem("user_id", data.id_user); // Store user_id/token
-        console.log("User logged in:", data.id_user);
+        const newCartId=data.id_cart
+        localStorage.setItem("id_user", data.id_user); // Store user_id/token
+        localStorage.setItem("identity", data.identity); // Store user_id/
+        localStorage.setItem("id_cart", newCartId); // Store cart_id/token 
       }
     } catch (error) {
       setMessage(error.message);

@@ -1,51 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './Compenents/Header/Header.jsx';
 import Hero from './Compenents/Hero/Hero.jsx';
 import Card from './Compenents/Card/Card.jsx';
 import Home from './Compenents/Home/Home.jsx';
+import './App.css';
 import DetailCard from './Compenents/detailCard/deatilCard.jsx';
 import Contact from './Compenents/Contact/Contact.jsx';
-import Ss from './Compenents/Ss.jsx'
+import Ss from './Compenents/Ss.jsx';
 import Login from './Compenents/login/Login.jsx';
-import Parteners from './Compenents/Parteners.jsx'
-import About from './Compenents/About/About.tsx';  // If it'
-// s a TypeScript file
+import Admin from './Compenents/Dashbord/Dashbord.jsx';
+import Parteners from './Compenents/Parteners.jsx';
+import Cart from './Compenents/Cart/Cart.jsx'
+import Footer from './Compenents/FOTER/Foter.jsx';
+import About from './Compenents/About/About.tsx';
+
 function App() {
+
   return (
     <Router>
-      {/* Le Header sera toujours visible sur toutes les pages */}
-      <Header />
-    
+      {/* Header avec le nombre d'articles dans le panier */}
+      <Header/>
 
-      
-      {/* Le contenu changera en fonction des routes */}
+      {/* Contenu des routes */}
       <div>
         <Routes>
-          {/* Route pour la page d'accueil */}
-          <Route path="/" element={
-            <>
-            <Home/>
-            <Hero />  {/* Affiche Hero */}
-            <Ss />   
-            <Parteners/>
-            
-             {/* Affiche la section sous le Hero */}
-          </>
-        } />
-          
-          {/* Route pour la page des produits */}
-          <Route path="/card" element={<Card />} />
-          <Route path='/about' element={<About/>}/>
-          
-          {/* Route pour la page de contact */}
-          <Route path="/contact" element={<Contact />} />
-          <Route path='/detailCard/:id' element={<DetailCard />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <Home />
+                <Hero />
+                <Ss />
+                <Parteners />
+                <Admin />
+              </>
+            }
+          />
 
-          
-          {/* Route pour la page de login */}
+          {/* Route pour afficher une carte */}
+          <Route path="/card" element={<Card/>} />
+
+          {/* Route pour afficher le détail d'un produit avec gestion du panier */}
+          <Route
+            path="/detailCard/:id"
+            element={<DetailCard/>}
+          />
+
+          {/* Autres routes */}
+          <Route path="/about" element={<About />} />
+          <Route path="/Cart/:id_cart" element={<Cart/>}/>
+          <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
